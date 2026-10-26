@@ -101,3 +101,33 @@ def evaluate_classifier(model, loader, device, class_names):
         y_prob,
         class_names
     )
+
+def optimize_thresholds(y_true, y_prob, class_names):
+    thresholds = np.arange(0.05, 0.951, 0.01)
+
+    best_thresholds = {}
+
+    for i, disease in enumerate(class_names):
+        best_f1 = -1
+        best_threshold = 0.5
+
+        for threshold in thresholds:
+            predictions = (
+                y_prob[:, i] >= threshold
+            ).astype(int)
+
+            f1 = f1_score(
+                y_true[:, i],
+                predictions,
+                zero_division=0
+            )
+
+            if f1 > best_f1:
+                best_f1 = f1
+                best_threshold = threshold
+
+        best_thresholds[disease] = float(
+            round(best_threshold, 2)
+        )
+
+    return best_thresholds
